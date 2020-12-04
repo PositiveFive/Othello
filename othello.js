@@ -1,6 +1,6 @@
 let canvas = document.querySelector("#myCanvas");
 let context = canvas.getContext('2d');
-
+//let undoButton = document.createElement("undo");
 
 context.fillStyle = 'green';
 context.fillRect(0, 0, 512, 512);
@@ -16,6 +16,7 @@ for(let i = 1; i < 9; i++) {
 
 const model = {
   board : [[' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ','W','B',' ',' ',' '], [' ',' ',' ','B','W',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' ']],
+  previousBoard : [[' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ','W','B',' ',' ',' '], [' ',' ',' ','B','W',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' '], [' ',' ',' ',' ',' ',' ',' ',' ']],
   next: 'B',
   count: 0,
   numW: 0,
@@ -30,6 +31,22 @@ function nextTurn() {
     case 'W':
         model.next = 'B';
         return;
+    }
+}
+
+function copyBoard() {
+    for(let i = 0; i < 8; i++) {
+        for(let j = 0; j < 8; j++) {
+            model.previousBoard[i][j] = model.board[i][j]
+        }
+    }
+}
+
+function copyPreviousBoard() {
+    for(let i = 0; i < 8; i++) {
+        for(let j = 0; j < 8; j++) {
+            model.board[i][j] = model.previousBoard[i][j]
+        }
     }
 }
 
@@ -345,12 +362,11 @@ function addPiece(player, x, y) {
 }
 
 canvas.onclick =  function(e){
-    let x = 0;
-    let y = 0;
     x = Math.floor(e.clientX/64);
     y = Math.floor(e.clientY/64);
     console.log(x, y)
     if(isValidMove(model.next, x, y)) {
+        copyBoard();
         addPiece(model.next, x, y);
         nextTurn();
         updateDisplay();
@@ -371,4 +387,26 @@ canvas.onclick =  function(e){
             }
         }
     }
+}
+copyBoard()
+function canUndo() {
+    for(let i = 0; i < 8; i++) {
+        for(let j = 0; j < 8; j++) {
+            if(model.previousBoard[i][j] != model.board[i][j]) {
+                return true
+            }
+        }
+    }
+    return false
+}
+function undoMove(){
+    if(canUndo()) {
+        copyPreviousBoard()
+        nextTurn()
+        console.log("move undone")
+    }
+    else {
+        console.log("no move to undo")
+    }
+    updateDisplay()
 }
